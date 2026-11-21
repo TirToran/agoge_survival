@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "  A",
+    " B ",
+    "A  "
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:string"
+    },
+    "B": {
+      "item": "minecraft:leather"
+    }
+  },
+  "result": {
+    "item": "agoge_survival:sling"
+  }
+}

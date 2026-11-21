@@ -1,8 +1,10 @@
 package net.torantyr.agoge_survival;
 
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -13,6 +15,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.torantyr.agoge_survival.block.ModBlocks;
+import net.torantyr.agoge_survival.entity.ModEntities;
 import net.torantyr.agoge_survival.items.ModCreativeModeTabs;
 import net.torantyr.agoge_survival.items.ModItems;
 import org.slf4j.Logger;
@@ -32,6 +35,7 @@ public class agoge_survival {
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModEntities.register(modEventBus);
 
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
@@ -65,6 +69,11 @@ public class agoge_survival {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
+        }
+
+        @SubscribeEvent
+        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerEntityRenderer(ModEntities.SLING_PROJECTILE.get(), ThrownItemRenderer::new);
         }
     }
 }
