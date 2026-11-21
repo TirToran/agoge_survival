@@ -9,8 +9,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 public class SlingClientExtensions implements IClientItemExtensions {
-    private static final float ACCEL = 4.0F;      // degrees per tick, per tick (spin-up speed)
-    private static final float MAX_SPEED = 40.0F; // degrees per tick (full spin)
+    private static final float ACCEL = 1.6F;      // degrees per tick, per tick (spin-up speed)
+    private static final float MAX_SPEED = 60.0F; // degrees per tick (full spin)
     private static final float SETTLE = 0.2F;     // how fast the reset eases to rest
 
     private float angle = 0.0F; // current spin angle in degrees

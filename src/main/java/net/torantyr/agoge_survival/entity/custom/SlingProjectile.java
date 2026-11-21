@@ -1,5 +1,7 @@
 package net.torantyr.agoge_survival.entity.custom;
 
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
@@ -23,6 +25,17 @@ public class SlingProjectile extends ThrowableItemProjectile {
         super(ModEntities.SLING_PROJECTILE.get(), shooter, level);
     }
 
+    public void setDamage(float damage) {
+        this.damage = damage;
+    }
+
+    private boolean crit = false;
+
+    public void setCrit(boolean crit) {
+        this.crit = crit;
+    }
+
+
     //What the projectile looks like in flight
     @Override
     protected Item getDefaultItem() {
@@ -32,7 +45,19 @@ public class SlingProjectile extends ThrowableItemProjectile {
     @Override
     protected void onHitEntity(EntityHitResult result) {
         super.onHitEntity(result);
-        result.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), damage);
+        float finalDamage = damage;
+        if (crit) {
+            finalDamage += this.random.nextInt((int) (damage / 2 + 2)); // same bonus formula as a vanilla arrow crit
+        }
+        result.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), finalDamage);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (crit && this.level() instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.CRIT, getX(), getY(), getZ(), 1, 0.0, 0.0, 0.0, 0.0);
+        }
     }
 
     @Override

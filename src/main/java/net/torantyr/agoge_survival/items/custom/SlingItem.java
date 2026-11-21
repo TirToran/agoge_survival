@@ -22,10 +22,18 @@ public class SlingItem extends BowItem {
         super(pProperties);
     }
 
+    private static final int FULL_DRAW_TICKS = 40; // 20 ticks = 1 second
+    private static final float MAX_DAMAGE = 5.0F; // damage at full draw (5.0 = 2.5 hearts)
+    public static final int CRIT_TICKS = 60;             // crit threshold, also when the max loop starts
+
     // What counts as ammo
     @Override
     public Predicate<ItemStack> getAllSupportedProjectiles() {
         return stack -> stack.is(Items.FLINT);
+    }
+
+    private static float getSlingPower(int ticksHeld) {
+        return Math.min((float) ticksHeld / FULL_DRAW_TICKS, 1.0F);
     }
 
     // Runs when the player lets go of right-click
@@ -43,13 +51,15 @@ public class SlingItem extends BowItem {
 
         // How long was right-click held? Ticks held becomes a power from 0.0 to 1.0
         int ticksHeld = this.getUseDuration(stack) - timeLeft;
-        float power = getPowerForTime(ticksHeld);
+        float power = getSlingPower(ticksHeld);
         if (power < 0.1F) {
             return; // too short a pull, do nothing
         }
 
         if (!level.isClientSide) {
             SlingProjectile projectile = new SlingProjectile(level, player);
+            projectile.setDamage(MAX_DAMAGE * power);
+            projectile.setCrit(ticksHeld >= CRIT_TICKS);
             projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, power * 3.0F, 1.0F);
             level.addFreshEntity(projectile);
         }
@@ -74,5 +84,13 @@ public class SlingItem extends BowItem {
     @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         consumer.accept(new SlingClientExtensions());
+    }
+
+    @Override
+    public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remainingUseDuration) {
+        if (level.isClientSide && entity instanceof Player player) {
+            int ticksHeld = this.getUseDuration(stack) - remainingUseDuration;
+            SlingClientSounds.onUseTick(player, ticksHeld);
+        }
     }
 }
