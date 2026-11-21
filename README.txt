@@ -1,3 +1,10 @@
+About:
+This is a mod I'm building as part of a larger custom modpack.
+The main goal is to teach myself the basics of coding java.
+I have a family and a full time job so updates will be rare.
+
+Thank you for your interest, I hope you have fun.
+
 
 Source installation information for modders
 -------------------------------------------
