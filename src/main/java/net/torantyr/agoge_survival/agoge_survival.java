@@ -1,7 +1,10 @@
 package net.torantyr.agoge_survival;
 
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -18,6 +21,7 @@ import net.torantyr.agoge_survival.block.ModBlocks;
 import net.torantyr.agoge_survival.entity.ModEntities;
 import net.torantyr.agoge_survival.items.ModCreativeModeTabs;
 import net.torantyr.agoge_survival.items.ModItems;
+import net.torantyr.agoge_survival.items.custom.SlingClientExtensions;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -69,6 +73,14 @@ public class agoge_survival {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
+            event.enqueueWork(() ->
+                    ItemProperties.register(ModItems.SLING.get(),
+                            new ResourceLocation(MODID, "whirling"),
+                            (stack, level, entity, seed) ->
+                                    entity != null
+                                            && entity == Minecraft.getInstance().player
+                                            && (entity.getMainHandItem() == stack || entity.getOffhandItem() == stack)
+                                            && SlingClientExtensions.whirling ? 1.0F : 0.0F));
         }
 
         @SubscribeEvent

@@ -8,9 +8,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.torantyr.agoge_survival.entity.custom.SlingProjectile;
 
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class SlingItem extends BowItem {
@@ -61,5 +64,15 @@ public class SlingItem extends BowItem {
                 player.getInventory().removeItem(ammo);
             }
         }
+    }
+
+    @Override
+    public UseAnim getUseAnimation(ItemStack stack) {
+        return UseAnim.NONE; // stops the bow's built-in pull-back pose
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new SlingClientExtensions());
     }
 }
