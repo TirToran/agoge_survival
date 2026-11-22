@@ -8,7 +8,6 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import net.torantyr.agoge_survival.agoge_survival;
-import net.torantyr.agoge_survival.block.ModBlocks;
 
 public class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
@@ -20,8 +19,7 @@ public class ModCreativeModeTabs {
                     .title(Component.translatable("creativetab.agoge_tab"))
                     .displayItems((pParameters, pOutput) -> {
                        pOutput.accept(ModItems.SLING.get());
-
-                       pOutput.accept(ModBlocks.CEDAR_WOOD.get());
+                       pOutput.accept(ModItems.NETHERITE_BULLET.get());
                     })
                     .build());
 

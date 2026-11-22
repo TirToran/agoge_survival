@@ -13,7 +13,12 @@ public class ModItems {
             DeferredRegister.create(ForgeRegistries.ITEMS, agoge_survival.MODID);
 
     public static final RegistryObject<Item> SLING = ITEMS.register("sling",
-            () -> new SlingItem(new Item.Properties().stacksTo(1)));
+            () -> new SlingItem(new Item.Properties().durability(479)));
+
+    public static final RegistryObject<Item> NETHERITE_BULLET =
+            ITEMS.register("netherite_bullet", () -> new Item(new Item.Properties()));
+
+
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

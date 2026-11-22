@@ -20,7 +20,6 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.torantyr.agoge_survival.block.ModBlocks;
 import net.torantyr.agoge_survival.entity.ModEntities;
 import net.torantyr.agoge_survival.items.ModCreativeModeTabs;
 import net.torantyr.agoge_survival.items.ModItems;
@@ -42,7 +41,6 @@ public class agoge_survival {
         ModCreativeModeTabs.register(modEventBus);
 
         ModItems.register(modEventBus);
-        ModBlocks.register(modEventBus);
         ModEntities.register(modEventBus);
         ModSounds.register(modEventBus);
 
@@ -66,6 +64,7 @@ public class agoge_survival {
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if(event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModItems.SLING);
+            event.accept(ModItems.NETHERITE_BULLET);
         }
     }
 
