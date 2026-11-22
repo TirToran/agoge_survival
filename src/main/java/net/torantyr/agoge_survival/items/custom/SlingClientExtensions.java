@@ -3,24 +3,38 @@ package net.torantyr.agoge_survival.items.custom;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 public class SlingClientExtensions implements IClientItemExtensions {
+
+    // =====================================================================
+    // SHARED: used by both first person and third person
+    // =====================================================================
     private static final float ACCEL = 1.6F;      // degrees per tick, per tick (spin-up speed)
     private static final float MAX_SPEED = 60.0F; // degrees per tick (full spin)
-    private static final float SETTLE = 0.2F;     // how fast the reset eases to rest
+
+
+    // =====================================================================
+    // FIRST PERSON: what YOU see of your own sling.
+    // The game calls applyForgeHandTransform every frame for your own hand.
+    // =====================================================================
+    private static final float SETTLE = 0.2F;         // how fast the reset eases to rest
+    private static final float TILT_DEGREES = -90.0F; // how far the spin plane leans
 
     private float angle = 0.0F; // current spin angle in degrees
     private float speed = 0.0F; // current spin speed
+    private float tilt = 0.0F;  // 0 = flat, 1 = full tilt
 
+    // Read by the item model property (the texture swap) and by SlingClientEvents
     public static boolean whirling = false;
-
-    private static final float TILT_DEGREES = -90.0F; // how far the spin plane leans
-    private float tilt = 0.0F;                        // 0 = flat, 1 = full tilt
 
     @Override
     public boolean applyForgeHandTransform(PoseStack poseStack, LocalPlayer player, HumanoidArm arm,
@@ -67,5 +81,44 @@ public class SlingClientExtensions implements IClientItemExtensions {
 
         whirling = spinning || angle != 0.0F || tilt > 0.0F;
         return true; // we handled positioning, so skip the default transform
+    }
+
+
+    // =====================================================================
+    // THIRD PERSON: what OTHER players see, and what you see in F5 view.
+    // The game asks getArmPose when it draws a player's model.
+    // =====================================================================
+    private static final float TP_TILT_DEGREES = 0.0F; // lean of the circle, 0 for now
+    private static final float TP_ARM_RAISE = 3.6F;    // radians up from hanging: 1.57 is forward, 3.14 is straight up
+    private static final float TP_ARM_OUT_DEGREES = -45.0F; // arm swings out to the side, like a jumping jack
+    private static final float TP_RADIUS = 0.2F;       // radians: how wide the hand circles
+
+    private static final HumanoidModel.ArmPose SLING_POSE =
+            HumanoidModel.ArmPose.create("AGOGE_SLING", false, (model, entity, arm) -> {
+                int side = arm == HumanoidArm.RIGHT ? 1 : -1;
+                ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
+
+                // how long the sling has been in use, with partial ticks for smoothness
+                float t = entity.getTicksUsingItem() + Minecraft.getInstance().getFrameTime();
+
+                // same spin-up as first person: speeds up, then holds steady
+                float rampTicks = MAX_SPEED / ACCEL;
+                float degrees = t < rampTicks
+                        ? 0.5F * ACCEL * t * t
+                        : 0.5F * ACCEL * rampTicks * rampTicks + MAX_SPEED * (t - rampTicks);
+                float phi = (float) Math.toRadians(degrees);
+
+                part.xRot = -TP_ARM_RAISE + TP_RADIUS * Mth.cos(phi);
+                part.zRot = side * ((float) Math.toRadians(TP_ARM_OUT_DEGREES) + TP_RADIUS * Mth.sin(phi));
+                part.yRot = 0.0F;
+            });
+
+    @Override
+    public HumanoidModel.ArmPose getArmPose(LivingEntity entity, InteractionHand hand, ItemStack stack) {
+        if (!stack.isEmpty() && entity.isUsingItem()
+                && entity.getUsedItemHand() == hand && entity.getUseItemRemainingTicks() > 0) {
+            return SLING_POSE;
+        }
+        return null; // not whirling, so use the normal hold pose
     }
 }
