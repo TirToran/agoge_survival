@@ -1,0 +1,4 @@
+{
+  "sling_spinning_up": { "sounds": ["groundwork_sling:sling_spinning_up"] },
+  "sling_spinning_max": { "sounds": ["groundwork_sling:sling_spinning_max"] }
+}
