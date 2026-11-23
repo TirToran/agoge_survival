@@ -26,7 +26,7 @@ import java.util.function.Predicate;
 public class SlingItem extends BowItem {
 
     // =====================================================================
-    // CONSTANTS: timing for the draw. 20 ticks = 1 second.
+    // CONSTANTS: timing for the draw. 20 ticks = 1 second. ***
     // =====================================================================
     private static final int FULL_DRAW_TICKS = 40; // ticks held to reach full power
     public static final int CRIT_TICKS = 60;       // ticks held to earn a crit; also when the max loop sound starts
