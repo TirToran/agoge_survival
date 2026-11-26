@@ -1,7 +1,12 @@
 package net.torantyr.groundwork_sling.items.custom;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.SmallFireball;
@@ -16,27 +21,45 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.network.PacketDistributor;
 import net.torantyr.groundwork_sling.ModTags;
 import net.torantyr.groundwork_sling.entity.custom.SlingProjectile;
 import net.torantyr.groundwork_sling.items.ModItems;
+import org.jetbrains.annotations.Nullable;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.network.SerializableDataTicket;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class SlingItem extends BowItem {
+public class SlingItem extends BowItem implements GeoItem {
 
     // =====================================================================
     // CONSTANTS: timing for the draw. 20 ticks = 1 second. ***
     // =====================================================================
     private static final int FULL_DRAW_TICKS = 40; // ticks held to reach full power
     public static final int CRIT_TICKS = 60;       // ticks held to earn a crit; also when the max loop sound starts
+    private static final RawAnimation WHIRL_ANIM = RawAnimation.begin()
+            .thenPlay("animation.sling.spin_up")
+            .thenLoop("animation.sling.spin_loop");
+    private static final RawAnimation RESET_ANIM = RawAnimation.begin()
+            .thenPlay("animation.sling.reset");
 
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     // =====================================================================
     // CONSTRUCTOR: the game builds the item through this.
     // =====================================================================
     public SlingItem(Properties pProperties) {
         super(pProperties);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this); // lets the server trigger animations
     }
 
 
@@ -78,6 +101,9 @@ public class SlingItem extends BowItem {
         // 1. Only players can fire the sling
         if (!(entity instanceof Player player)) {
             return;
+        }
+        if (level instanceof ServerLevel serverLevel) {
+            triggerAnim(player, GeoItem.getOrAssignId(stack, serverLevel), "whirl_controller", "reset");
         }
 
         // 2. Find ammo in the inventory (in creative this returns a stand-in, so no ammo is needed)
@@ -181,5 +207,97 @@ public class SlingItem extends BowItem {
             int ticksHeld = this.getUseDuration(stack) - remainingUseDuration;
             SlingClientSounds.onUseTick(player, ticksHeld);
         }
+    }
+
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        InteractionResultHolder<ItemStack> result = super.use(level, player, hand);
+        if (result.getResult() == InteractionResult.CONSUME && level instanceof ServerLevel serverLevel) {
+            triggerAnim(player, GeoItem.getOrAssignId(player.getItemInHand(hand), serverLevel),
+                    "whirl_controller", "whirl");
+        }
+        return result;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "whirl_controller", 0, state -> PlayState.STOP)
+                .triggerableAnim("whirl", WHIRL_ANIM)
+                .triggerableAnim("reset", RESET_ANIM));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
+    }
+
+    @Override
+    public double getBoneResetTime() {
+        return GeoItem.super.getBoneResetTime();
+    }
+
+    @Override
+    public boolean shouldPlayAnimsWhileGamePaused() {
+        return GeoItem.super.shouldPlayAnimsWhileGamePaused();
+    }
+
+    @Override
+    public double getTick(Object itemStack) {
+        return GeoItem.super.getTick(itemStack);
+    }
+
+    @Override
+    public boolean isPerspectiveAware() {
+        return GeoItem.super.isPerspectiveAware();
+    }
+
+    @Override
+    public @Nullable <D> D getAnimData(long instanceId, SerializableDataTicket<D> dataTicket) {
+        return GeoItem.super.getAnimData(instanceId, dataTicket);
+    }
+
+    @Override
+    public <D> void setAnimData(Entity relatedEntity, long instanceId, SerializableDataTicket<D> dataTicket, D data) {
+        GeoItem.super.setAnimData(relatedEntity, instanceId, dataTicket, data);
+    }
+
+    @Override
+    public <D> void syncAnimData(long instanceId, SerializableDataTicket<D> dataTicket, D data, PacketDistributor.PacketTarget packetTarget) {
+        GeoItem.super.syncAnimData(instanceId, dataTicket, data, packetTarget);
+    }
+
+    @Override
+    public <D> void triggerAnim(Entity relatedEntity, long instanceId, @Nullable String controllerName, String animName) {
+        GeoItem.super.triggerAnim(relatedEntity, instanceId, controllerName, animName);
+    }
+
+    @Override
+    public <D> void triggerAnim(long instanceId, @Nullable String controllerName, String animName, PacketDistributor.PacketTarget packetTarget) {
+        GeoItem.super.triggerAnim(instanceId, controllerName, animName, packetTarget);
+    }
+
+    @Override
+    public void stopTriggeredAnim(Entity relatedEntity, long instanceId, @Nullable String controllerName, @Nullable String animName) {
+        GeoItem.super.stopTriggeredAnim(relatedEntity, instanceId, controllerName, animName);
+    }
+
+    @Override
+    public void stopTriggeredAnim(Entity relatedEntity, long instanceId, @Nullable String controllerName, @Nullable String animName, PacketDistributor.PacketTarget packetTarget) {
+        GeoItem.super.stopTriggeredAnim(relatedEntity, instanceId, controllerName, animName, packetTarget);
+    }
+
+    @Override
+    public void triggerArmorAnim(Entity relatedEntity, long instanceId, @Nullable String controllerName, String animName) {
+        GeoItem.super.triggerArmorAnim(relatedEntity, instanceId, controllerName, animName);
+    }
+
+    @Override
+    public void stopTriggeredArmorAnim(Entity relatedEntity, long instanceId, @Nullable String controllerName, @Nullable String animName) {
+        GeoItem.super.stopTriggeredArmorAnim(relatedEntity, instanceId, controllerName, animName);
+    }
+
+    @Override
+    public @Nullable AnimatableInstanceCache animatableCacheOverride() {
+        return GeoItem.super.animatableCacheOverride();
     }
 }

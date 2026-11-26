@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -69,14 +70,14 @@ public class SlingClientExtensions implements IClientItemExtensions {
             float f = Mth.sin(swingProcess * swingProcess * (float) Math.PI);
             poseStack.mulPose(Axis.YP.rotationDegrees(side * (45.0F + f * -20.0F)));
             float f1 = Mth.sin(Mth.sqrt(swingProcess) * (float) Math.PI);
-            poseStack.mulPose(Axis.ZP.rotationDegrees(side * f1 * -20.0F));
+         //   poseStack.mulPose(Axis.ZP.rotationDegrees(side * f1 * -20.0F));
             poseStack.mulPose(Axis.XP.rotationDegrees(f1 * -80.0F));
-            poseStack.mulPose(Axis.YP.rotationDegrees(side * -45.0F));
+         //   poseStack.mulPose(Axis.YP.rotationDegrees(side * -45.0F));
         }
 
         poseStack.translate(0.0F, 0.2F, 0.0F);                           // move to the spin pivot
-        poseStack.mulPose(Axis.YP.rotationDegrees(TILT_DEGREES * tilt)); // lean the spin plane
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-angle));       // the whirl
+       // poseStack.mulPose(Axis.YP.rotationDegrees(TILT_DEGREES * tilt)); // lean the spin plane
+       // poseStack.mulPose(Axis.ZP.rotationDegrees(-angle));       // the whirl
         poseStack.translate(0.0F, -0.2F, 0.0F);                          // move back
 
         whirling = spinning || angle != 0.0F || tilt > 0.0F;
@@ -120,5 +121,16 @@ public class SlingClientExtensions implements IClientItemExtensions {
             return SLING_POSE;
         }
         return null; // not whirling, so use the normal hold pose
+    }
+
+    // THIS IS FOR THE GECKOLIB Animations to hand over the renderer
+    private SlingRenderer renderer;
+
+    @Override
+    public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+        if (this.renderer == null) {
+            this.renderer = new SlingRenderer(); // created late, once the game is ready
+        }
+        return this.renderer;
     }
 }
