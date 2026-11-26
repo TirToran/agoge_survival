@@ -13,7 +13,7 @@ public class SlingModel extends GeoModel<SlingItem> {
 
     @Override
     public ResourceLocation getTextureResource(SlingItem animatable) {
-        return new ResourceLocation(groundwork_sling.MODID, "textures/item/sling_spinning.png");
+        return new ResourceLocation(groundwork_sling.MODID, "textures/item/sling_rest.png");
     }
 
     @Override

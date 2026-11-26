@@ -81,17 +81,9 @@ public class groundwork_sling {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             event.enqueueWork(() ->
-                    ItemProperties.register(ModItems.SLING.get(),
-                            new ResourceLocation(MODID, "whirling"),
-                            (stack, level, entity, seed) ->
-                                    entity != null
-                                            && entity == Minecraft.getInstance().player
-                                            && (entity.getMainHandItem() == stack || entity.getOffhandItem() == stack)
-                                            && SlingClientExtensions.whirling ? 1.0F : 0.0F));
-
             ModLoadingContext.get().registerExtensionPoint(
                     ConfigScreenHandler.ConfigScreenFactory.class,
-                    () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new ModConfigScreen(parent)));
+                    () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new ModConfigScreen(parent))));
         }
 
         @SubscribeEvent

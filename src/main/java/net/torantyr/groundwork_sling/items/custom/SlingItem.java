@@ -47,10 +47,10 @@ public class SlingItem extends BowItem implements GeoItem {
     private static final int FULL_DRAW_TICKS = 40; // ticks held to reach full power
     public static final int CRIT_TICKS = 60;       // ticks held to earn a crit; also when the max loop sound starts
     private static final RawAnimation WHIRL_ANIM = RawAnimation.begin()
-            .thenPlay("animation.sling.spin_up")
-            .thenLoop("animation.sling.spin_loop");
+            .thenPlay("animation.sling.tp.spin_up")
+            .thenLoop("animation.sling.tp.spin_loop");
     private static final RawAnimation RESET_ANIM = RawAnimation.begin()
-            .thenPlay("animation.sling.reset");
+            .thenPlay("animation.sling.tp.reset");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
