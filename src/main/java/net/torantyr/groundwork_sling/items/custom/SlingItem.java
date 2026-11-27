@@ -1,5 +1,7 @@
 package net.torantyr.groundwork_sling.items.custom;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -11,10 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.entity.projectile.ThrownEnderpearl;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -28,6 +27,7 @@ import net.torantyr.groundwork_sling.items.ModItems;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoItem;
 import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
+import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
@@ -46,11 +46,6 @@ public class SlingItem extends BowItem implements GeoItem {
     // =====================================================================
     private static final int FULL_DRAW_TICKS = 40; // ticks held to reach full power
     public static final int CRIT_TICKS = 60;       // ticks held to earn a crit; also when the max loop sound starts
-    private static final RawAnimation WHIRL_ANIM = RawAnimation.begin()
-            .thenPlay("animation.sling.tp.spin_up")
-            .thenLoop("animation.sling.tp.spin_loop");
-    private static final RawAnimation RESET_ANIM = RawAnimation.begin()
-            .thenPlay("animation.sling.tp.reset");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -219,12 +214,19 @@ public class SlingItem extends BowItem implements GeoItem {
         return result;
     }
 
+    // CONTROLLERS CONTROLLERS CONTROLLER <<< Stop missing this block.
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "whirl_controller", 0, state -> PlayState.STOP)
-                .triggerableAnim("whirl", WHIRL_ANIM)
-                .triggerableAnim("reset", RESET_ANIM));
+        controllers.add(new AnimationController<>(this, "sling_controller", 0, SlingAnimationHandler::handle));
     }
+        // Comment this out before launch, test only code.
+ //       controllers.add(new AnimationController<>(this, "debug_controller", 0, state -> {
+ //           ItemDisplayContext view = state.getData(DataTickets.ITEM_RENDER_PERSPECTIVE);
+ //           if (view != ItemDisplayContext.GUI && Minecraft.getInstance().player != null) {
+ //               Minecraft.getInstance().player.displayClientMessage(Component.literal("view = " + view), true);
+ //           }
+ //           return PlayState.STOP;
+ //       }));
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
@@ -246,9 +248,10 @@ public class SlingItem extends BowItem implements GeoItem {
         return GeoItem.super.getTick(itemStack);
     }
 
+    // Makes GeckoLib check the perspective before deciding what animation to play.
     @Override
     public boolean isPerspectiveAware() {
-        return GeoItem.super.isPerspectiveAware();
+        return true;
     }
 
     @Override
