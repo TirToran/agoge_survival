@@ -7,6 +7,7 @@ import net.torantyr.groundwork_sling.sound.ModSounds;
 
 public class SlingClientSounds {
     public static void onUseTick(Player player, int ticksHeld) {
+        if (ModClientConfig.SOUND_VOLUME.get() <= 0.0) return;
         if (!ModClientConfig.SLING_SOUNDS.get()) return;
 
         Minecraft mc = Minecraft.getInstance();

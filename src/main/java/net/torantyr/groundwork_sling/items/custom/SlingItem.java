@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.network.PacketDistributor;
 import net.torantyr.groundwork_sling.ModTags;
+import net.torantyr.groundwork_sling.SlingRules;
 import net.torantyr.groundwork_sling.entity.custom.SlingProjectile;
 import net.torantyr.groundwork_sling.items.ModItems;
 import org.jetbrains.annotations.Nullable;
@@ -65,7 +66,8 @@ public class SlingItem extends BowItem implements GeoItem {
     // What counts as ammo: anything in the sling_ammo tag
     @Override
     public Predicate<ItemStack> getAllSupportedProjectiles() {
-        return stack -> stack.is(ModTags.Items.SLING_AMMO);
+        return stack -> stack.is(ModTags.Items.SLING_AMMO)
+                && (!stack.is(Items.FIRE_CHARGE) || SlingRules.fireChargesAllowed());
     }
 
     // Base damage per ammo type. Final damage = this x projectile speed, rounded up, like an arrow.

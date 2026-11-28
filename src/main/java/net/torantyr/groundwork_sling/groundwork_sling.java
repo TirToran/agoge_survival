@@ -24,6 +24,7 @@ import net.torantyr.groundwork_sling.entity.ModEntities;
 import net.torantyr.groundwork_sling.items.ModCreativeModeTabs;
 import net.torantyr.groundwork_sling.items.ModItems;
 import net.torantyr.groundwork_sling.items.custom.SlingClientExtensions;
+import net.torantyr.groundwork_sling.network.ModNetwork;
 import net.torantyr.groundwork_sling.sound.ModSounds;
 import org.slf4j.Logger;
 
@@ -34,6 +35,10 @@ public class groundwork_sling {
     public static final String MODID = "groundwork_sling";
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
+
+    private void commonSetup(final FMLCommonSetupEvent event) {
+        event.enqueueWork(ModNetwork::register);
+    }
 
     public groundwork_sling() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -55,10 +60,9 @@ public class groundwork_sling {
 
         // Register the config settings
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC);
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event) {
-    }
 
     // Add the example block item to the creative mode block/item selection list
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
